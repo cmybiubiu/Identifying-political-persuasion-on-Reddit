@@ -267,26 +267,25 @@ def extract2(feat, comment_class, comment_id):
 
 def main(args):
     #Declare necessary global variables here.
-    path = '/u/cs401/A1/feats/'
     global Alt_data
-    Alt_data = np.load(path + 'Alt_feats.dat.npy')
+    Alt_data = np.load(feats_path + 'Alt_feats.dat.npy')
     global Alt_ID
-    Alt_ID = open(path + 'Alt_IDs.txt', 'r').read().split('\n')
+    Alt_ID = open(feats_path + 'Alt_IDs.txt', 'r').read().split('\n')
 
     global Right_data
-    Right_data = np.load(path + 'Right_feats.dat.npy')
+    Right_data = np.load(feats_path + 'Right_feats.dat.npy')
     global Right_ID
-    Right_ID = open(path + 'Right_IDs.txt', 'r').read().split('\n')
+    Right_ID = open(feats_path + 'Right_IDs.txt', 'r').read().split('\n')
 
     global Left_data
-    Left_data = np.load(path + 'Left_feats.dat.npy')
+    Left_data = np.load(feats_path + 'Left_feats.dat.npy')
     global Left_ID
-    Left_ID = open(path + 'Left_IDs.txt', 'r').read().split('\n')
+    Left_ID = open(feats_path + 'Left_IDs.txt', 'r').read().split('\n')
 
     global Center_data
-    Center_data = np.load(path + 'Center_feats.dat.npy')  # <class 'numpy.ndarray'>   (200272, 144)
+    Center_data = np.load(feats_path + 'Center_feats.dat.npy')  # <class 'numpy.ndarray'>   (200272, 144)
     global Center_ID
-    Center_ID = open(path + 'Center_IDs.txt', 'r').read().split('\n')  # List of IDs
+    Center_ID = open(feats_path + 'Center_IDs.txt', 'r').read().split('\n')  # List of IDs
 
     BGL_csv_filename = '/u/cs401/Wordlists/BristolNorms+GilhoolyLogie.csv'
     Warringer_csv_filename = '/u/cs401/Wordlists/Ratings_Warriner_et_al.csv'
@@ -337,5 +336,7 @@ if __name__ == "__main__":
     parser.add_argument("-i", "--input", help="The input JSON file, preprocessed as in Task 1", required=True)
     parser.add_argument("-p", "--a1_dir", help="Path to csc401 A1 directory. By default it is set to the cdf directory for the assignment.", default="/u/cs401/A1/")
     args = parser.parse_args()
+
+    feats_path = os.path.join(args.a1_dir, 'feats')
 
     main(args)
