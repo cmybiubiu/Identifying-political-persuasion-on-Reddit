@@ -35,9 +35,6 @@ def preproc1(comment , steps=range(1, 6)):
     '''
     modComm = comment
     if 1 in steps:
-        #modify this to handle other whitespace chars.
-        #replace newlines with spaces
-        #modComm = re.sub(r"\n{1,}", " ", modComm)
         modComm = modComm.replace('\n', '').replace('\r', '').replace('\t', '')
     if 2 in steps:  # unescape html
         modComm = html.unescape(modComm)
@@ -47,11 +44,8 @@ def preproc1(comment , steps=range(1, 6)):
 
     if 4 in steps: #remove duplicate spaces.
         modComm = re.sub(r'( {2,})', '', modComm)
-        modComm = re.sub(r"(\s*$)", "", modComm)
 
     if 5 in steps:
-        # TODO: get Spacy document for modComm
-        # TODO: use Spacy document for modComm to create a string.
         # Make sure to:
         #    * Insert "\n" between sentences.
         #    * Split tokens with spaces.
@@ -60,9 +54,8 @@ def preproc1(comment , steps=range(1, 6)):
             return '\n'
         utterance = nlp(modComm)
         modComm = ''
-
-        for sent in utterance.sents:
-            def new_str(pos):  # this is a generator that constructs a word+tag using spacy's NLP
+        for sentence in utterance.sents:
+            def create_new_str(pos):  # this is a generator that constructs a word+tag using spacy's NLP
                 for token in pos:
                     if token.lemma_[0] == '-' and token.text[0] != '-':  # as per handout
                         beg = token.text
@@ -70,7 +63,7 @@ def preproc1(comment , steps=range(1, 6)):
                         beg = token.lemma_
                     yield beg + '/' + token.tag_
 
-            modComm += " ".join(new_str(sent)) + '\n'  # end each sentence with '\n'
+            modComm += " ".join(create_new_str(sentence)) + '\n'  # end each sentence with '\n'
 
 
     return modComm
@@ -98,9 +91,7 @@ def main(args):
                 j = json.loads(line)
 
                 desired_key = ['score', 'controversiality', 'author', 'body', 'id']
-                # desired_key = ['author', 'body', 'id']
                 j = ({key: j[key] for key in desired_key})
-                # dict_you_want = { your_key: old_dict[your_key] for your_key in your_keys }
                 j['cat'] = file
                 pre_text = preproc1(j['body'])
                 j['body'] = pre_text
