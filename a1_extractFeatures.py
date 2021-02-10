@@ -337,6 +337,6 @@ if __name__ == "__main__":
     parser.add_argument("-p", "--a1_dir", help="Path to csc401 A1 directory. By default it is set to the cdf directory for the assignment.", default="/u/cs401/A1/")
     args = parser.parse_args()
 
-    feats_path = os.path.join(args.a1_dir, 'feats')
+    feats_path = os.path.join(args.a1_dir, 'feats/')
 
     main(args)
