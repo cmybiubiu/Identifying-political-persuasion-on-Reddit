@@ -16,8 +16,8 @@ import re
 import functools
 import os
 import time
-from sklearn.decomposition import LatentDirichletAllocation, TruncatedSVD
-from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
+#from sklearn.decomposition import LatentDirichletAllocation, TruncatedSVD
+#from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
 
 # Provided wordlists.
 FIRST_PERSON_PRONOUNS = {
