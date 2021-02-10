@@ -275,7 +275,7 @@ def main(args):
     # TODO: Call extract2 for each feature vector to copy LIWC features (features 30-173)
     # into feats. (Note that these rely on each data point's class,
     # which is why we can't add them in extract1).
-    stime = time.clock()
+
     for i, comment in enumerate(data):
         if (i + 1) % 500 == 0:
             print(f"step: '{i+1}' at time '{time.clock()-stime}'")
