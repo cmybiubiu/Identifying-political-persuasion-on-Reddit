@@ -241,22 +241,22 @@ def extract2(feat, comment_class, comment_id):
     if comment_class == 'Left':
         index = Left_ID.index(comment_id)
         feat[0][29:137] = Left_data[index][:]
-        feat[0][-1] = 0
+        feat[0][137] = 0
 
     elif comment_class == 'Center':
         index = Center_ID.index(comment_id)
         feat[0][29:137] = Center_data[index][:]
-        feat[0][-1] = 1
+        feat[0][137] = 1
 
     elif comment_class == 'Right':
         index = Right_ID.index(comment_id)
         feat[0][29:137] = Right_data[index][:]
-        feat[0][-1] = 2
+        feat[0][137] = 2
 
     elif comment_class == 'Alt':
         index = Alt_ID.index(comment_id)
         feat[0][29:137] = Alt_data[index][:]
-        feat[0][-1] = 3
+        feat[0][137] = 3
 
     return feat
 
@@ -279,26 +279,26 @@ def main(args):
         comment_file = data[i]['cat']
         commentID = data[i]['id']
         feats[i][:-1] = extract1(comment)
-        # feats[i][:-1] = extract2(feats[i][:-1], comment_file, commentID)
-        if data[i]['cat'] == 'Left':
-            feats[i][-1] = 0
-            index = Left_ID.index(data[i]['id'])
-            feats[i][29:-1] = Left_data[index][:]
-
-        if data[i]['cat'] == 'Center':
-            feats[i][-1] = 1
-            index = Center_ID.index(data[i]['id'])
-            feats[i][29:-1] = Center_data[index][:]
-
-        if data[i]['cat'] == 'Right':
-            feats[i][-1] = 2
-            index = Right_ID.index(data[i]['id'])
-            feats[i][29:-1] = Right_data[index][:]
-
-        if data[i]['cat'] == 'Alt':
-            feats[i][-1] = 3
-            index = Alt_ID.index(data[i]['id'])
-            feats[i][29:-1] = Alt_data[index][:]
+        feats[i][:] = extract2(feats[i][:], comment_file, commentID)
+        # if data[i]['cat'] == 'Left':
+        #     feats[i][-1] = 0
+        #     index = Left_ID.index(data[i]['id'])
+        #     feats[i][29:-1] = Left_data[index][:]
+        #
+        # if data[i]['cat'] == 'Center':
+        #     feats[i][-1] = 1
+        #     index = Center_ID.index(data[i]['id'])
+        #     feats[i][29:-1] = Center_data[index][:]
+        #
+        # if data[i]['cat'] == 'Right':
+        #     feats[i][-1] = 2
+        #     index = Right_ID.index(data[i]['id'])
+        #     feats[i][29:-1] = Right_data[index][:]
+        #
+        # if data[i]['cat'] == 'Alt':
+        #     feats[i][-1] = 3
+        #     index = Alt_ID.index(data[i]['id'])
+        #     feats[i][29:-1] = Alt_data[index][:]
 
         if i % 100 == 0:
             print(i)
