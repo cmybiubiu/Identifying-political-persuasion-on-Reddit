@@ -239,25 +239,24 @@ def extract2(feat, comment_class, comment_id):
         the parameter feats.
     '''
     if comment_class == 'Left':
-        feat[0][-1] = 0
         index = Left_ID.index(comment_id)
-        feat[0][29:-1] = Left_data[index][:]
+        feat[0][29:137] = Left_data[index][:]
+        feat[0][-1] = 0
 
     if comment_class == 'Center':
-        feat[0][-1] = 1
         index = Center_ID.index(comment_id)
-        feat[0][29:-1] = Center_data[index][:]
+        feat[0][29:137] = Center_data[index][:]
+        feat[0][-1] = 1
 
     if comment_class == 'Right':
-        feat[0][-1] = 2
         index = Right_ID.index(comment_id)
-        feat[0][29:-1] = Right_data[index][:]
+        feat[0][29:137] = Right_data[index][:]
+        feat[0][-1] = 2
 
     if comment_class == 'Alt':
-        feat[0][-1] = 3
         index = Alt_ID.index(comment_id)
-        feat[0][29:-1] = Alt_data[index][:]
-
+        feat[0][29:137] = Alt_data[index][:]
+        feat[0][-1] = 3
 
     return feat
 
@@ -280,7 +279,7 @@ def main(args):
         comment_file = data[i]['cat']
         commentID = data[i]['id']
         feats[i][:-1] = extract1(comment)
-        feats[i][:-1] = extract2(feats[i][:-1], comment_file, commentID)
+        feats[i][:] = extract2(feats[i][:], comment_file, commentID)
         if i % 100 == 0:
             print(i)
 
