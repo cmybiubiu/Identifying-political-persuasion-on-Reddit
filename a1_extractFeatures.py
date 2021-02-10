@@ -214,33 +214,34 @@ def extract1(comment):
               chosen_bgl.append(BGL_word.loc[x])  # some words might not have a value,
           except:
               pass
-  # AoA
-  AoA = [x.get("AoA (100-700)", np.nan) for x in chosen_bgl]
-  AoA = flatten(AoA)
 
-  if np.count_nonzero(~np.isnan(AoA)) > 0:
-      # 18. norms average AoA
-      features_array[0][17] = np.nanmean(AoA)
-      # 21. standard deviation AoA
-      features_array[0][20] = np.nanstd(AoA)
+          # AoA
+          AoA = [x.get("AoA (100-700)", np.nan) for x in chosen_bgl]
+          AoA = flatten(AoA)
 
-  # IMG
-  IMG = [x.get("IMG", np.nan) for x in chosen_bgl]
-  IMG = flatten(IMG)
-  if np.count_nonzero(~np.isnan(IMG)) > 0:
-      # 19. average IMG
-      features_array[0][18] = np.nanmean(IMG)
-      # 22. standard deviation IMG
-      features_array[0][21] = np.nanstd(IMG)
+          if np.count_nonzero(~np.isnan(AoA)) > 0:
+              # 18. norms average AoA
+              features_array[0][17] = np.nanmean(AoA)
+              # 21. standard deviation AoA
+              features_array[0][20] = np.nanstd(AoA)
 
-  # FAM
-  FAM = [x.get("FAM", np.nan) for x in chosen_bgl]
-  FAM = flatten(FAM)
-  if np.count_nonzero(~np.isnan(FAM)) > 0:
-      # 20. average FAM
-      features_array[0][19] = np.nanmean(FAM)
-      # 23. standard deviation FAM
-      features_array[0][22] = np.nanstd(FAM)
+          # IMG
+          IMG = [x.get("IMG", np.nan) for x in chosen_bgl]
+          IMG = flatten(IMG)
+          if np.count_nonzero(~np.isnan(IMG)) > 0:
+              # 19. average IMG
+              features_array[0][18] = np.nanmean(IMG)
+              # 22. standard deviation IMG
+              features_array[0][21] = np.nanstd(IMG)
+
+          # FAM
+          FAM = [x.get("FAM", np.nan) for x in chosen_bgl]
+          FAM = flatten(FAM)
+          if np.count_nonzero(~np.isnan(FAM)) > 0:
+              # 20. average FAM
+              features_array[0][19] = np.nanmean(FAM)
+              # 23. standard deviation FAM
+              features_array[0][22] = np.nanstd(FAM)
 
   # sAoA = []
   # sIMG = []
@@ -272,38 +273,38 @@ def extract1(comment):
   #     features_array[0][19] = np.mean(sFAM)
   #     features_array[0][22] = np.std(sFAM)
 
+  if len(word_tags) > 0:
+      chosen_warr = []
+      for x in extract_words:  # again, fastest method
+          try:
+              chosen_warr.append(warringer_word.loc[x])  # some words might not have a value
+          except:
+              pass
+          #  V.Mean.Sum
+          VMS = [x.get("V.Mean.Sum", np.nan) for x in chosen_warr]
+          VMS = flatten(VMS)
+          if np.count_nonzero(~np.isnan(VMS)) > 0:
+              # 24. average V.Mean.Sum
+              features_array[0][23] = np.nanmean(VMS)
+              # 27. standard deviation V.Mean.Sum
+              features_array[0][26] = np.nanstd(VMS)
+          #  A.Mean.Sum
+          AMS = [x.get("A.Mean.Sum", np.nan) for x in chosen_warr]
+          AMS = flatten(AMS)
+          if np.count_nonzero(~np.isnan(AMS)) > 0:
+              # 25. average A.Mean.Sum
+              features_array[0][24] = np.nanmean(AMS)
+              # 28. standard deviation A.Mean.Sum
+              features_array[0][27] = np.nanstd(AMS)
 
-  chosen_warr = []
-  for x in extract_words:  # again, fastest method
-      try:
-          chosen_warr.append(warringer_word.loc[x])  # some words might not have a value
-      except:
-          pass
-      #  V.Mean.Sum
-      VMS = [x.get("V.Mean.Sum", np.nan) for x in chosen_warr]
-      VMS = flatten(VMS)
-      if np.count_nonzero(~np.isnan(VMS)) > 0:
-          # 24. average V.Mean.Sum
-          features_array[0][23] = np.nanmean(VMS)
-          # 27. standard deviation V.Mean.Sum
-          features_array[0][26] = np.nanstd(VMS)
-      #  A.Mean.Sum
-      AMS = [x.get("A.Mean.Sum", np.nan) for x in chosen_warr]
-      AMS = flatten(AMS)
-      if np.count_nonzero(~np.isnan(AMS)) > 0:
-          # 25. average A.Mean.Sum
-          features_array[0][24] = np.nanmean(AMS)
-          # 28. standard deviation A.Mean.Sum
-          features_array[0][27] = np.nanstd(AMS)
-
-      # D.Mean.Sum
-      DMS = [x.get("D.Mean.Sum", np.nan) for x in chosen_warr]
-      DMS = flatten(DMS)
-      if np.count_nonzero(~np.isnan(DMS)) > 0:
-          # 26. average D.Mean.Sum
-          features_array[0][25] = np.nanmean(DMS)
-          # 29. standard deviation D.Mean.Sum
-          features_array[0][28] = np.nanstd(DMS)
+          # D.Mean.Sum
+          DMS = [x.get("D.Mean.Sum", np.nan) for x in chosen_warr]
+          DMS = flatten(DMS)
+          if np.count_nonzero(~np.isnan(DMS)) > 0:
+              # 26. average D.Mean.Sum
+              features_array[0][25] = np.nanmean(DMS)
+              # 29. standard deviation D.Mean.Sum
+              features_array[0][28] = np.nanstd(DMS)
   # prepare for 24 - 29
   # s_valence = []
   # s_dominance = []
