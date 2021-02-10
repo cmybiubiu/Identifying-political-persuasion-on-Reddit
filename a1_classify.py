@@ -283,11 +283,9 @@ if __name__ == "__main__":
     X_train, X_test, y_train, y_test = train_test_split(features, labels, test_size=0.2)
     X_train, y_train = shuffle(X_train, y_train)
 
-    iBest = 4
-
     # 3.1
-    # print("Processing 3.1")
-    # iBest = class31(args.output_dir, X_train, X_test, y_train, y_test)
+    print("Processing 3.1")
+    iBest = class31(args.output_dir, X_train, X_test, y_train, y_test)
 
     # 3.2
     print("Processing 3.2")
@@ -298,6 +296,6 @@ if __name__ == "__main__":
     class33(args.output_dir, X_train, X_test, y_train, y_test, iBest, X_1k, y_1k)
 
     # 3.4
-    # print("Processing 3.4")
-    # class34(args.output_dir, X_train, X_test, y_train, y_test, iBest)
+    print("Processing 3.4")
+    class34(args.output_dir, X_train, X_test, y_train, y_test, iBest)
 
