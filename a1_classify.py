@@ -77,7 +77,7 @@ def class31(output_dir, X_train, X_test, y_train, y_test):
 
     with open(f"{output_dir}/a1_3.1.txt", "w") as outf:
         for i, classifier_clone in enumerate(classifiers):
-            print(i + "\n")
+            print(i)
             classifier = clone(classifier_clone)
             classifier.fit(X_train, y_train)
             y_pred = classifier.predict(X_test)
@@ -239,7 +239,7 @@ if __name__ == "__main__":
 
     # 3.1
     iBest = class31(args.output_dir, X_train, X_test, y_train, y_test)
-    print("iBest: " + iBest + "\n")
+    print("iBest:  %d \n", iBest)
 
     # 3.2
 
