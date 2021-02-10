@@ -243,17 +243,17 @@ def extract2(feat, comment_class, comment_id):
         feat[0][29:137] = Left_data[index][:]
         feat[0][-1] = 0
 
-    if comment_class == 'Center':
+    elif comment_class == 'Center':
         index = Center_ID.index(comment_id)
         feat[0][29:137] = Center_data[index][:]
         feat[0][-1] = 1
 
-    if comment_class == 'Right':
+    elif comment_class == 'Right':
         index = Right_ID.index(comment_id)
         feat[0][29:137] = Right_data[index][:]
         feat[0][-1] = 2
 
-    if comment_class == 'Alt':
+    elif comment_class == 'Alt':
         index = Alt_ID.index(comment_id)
         feat[0][29:137] = Alt_data[index][:]
         feat[0][-1] = 3
