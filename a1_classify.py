@@ -20,7 +20,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.neural_network import MLPClassifier
 from sklearn.naive_bayes import GaussianNB
 from sklearn.linear_model import SGDClassifier
-from sklearn.preprocessing import StandardScaler, MinMaxScale
+#from sklearn.preprocessing import StandardScaler, MinMaxScale
 from sklearn.utils import shuffle
 from sklearn.base import clone
 
