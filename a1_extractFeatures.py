@@ -16,6 +16,9 @@ import json
 import string
 import csv
 import re
+import pandas as pd
+import functools
+
 
 
 # Provided wordlists.
@@ -46,8 +49,24 @@ Left_ID = open(path + 'Left_IDs.txt', 'r').read().split('\n')  # List of IDs
 Center_data = np.load(path + 'Center_feats.dat.npy')  # <class 'numpy.ndarray'>   (200272, 144)
 Center_ID = open(path + 'Center_IDs.txt', 'r').read().split('\n')  # List of IDs
 
+def len_dec(fn):  # decorator to automatically take the length of a list returned by 'fn'
+  def len_fn(*args, **kwargs):
+    return len(fn(*args, **kwargs))
+  return len_fn
+
 BGL_csv_filename = '/u/cs401/Wordlists/BristolNorms+GilhoolyLogie.csv'
 Warringer_csv_filename = '/u/cs401/Wordlists/Ratings_Warriner_et_al.csv'
+
+BGL = pd.read_csv(BGL_csv_filename,
+                  usecols=["WORD", "AoA (100-700)", "IMG", "FAM"])
+warringer = pd.read_csv(Warringer_csv_filename,
+                   usecols=["Word", "V.Mean.Sum", "D.Mean.Sum", "A.Mean.Sum"])
+
+BGL_word = BGL.set_index(['WORD'])
+warringer_word = warringer.set_index(['Word'])
+
+findall = functools.partial(re.findall, flags=re.IGNORECASE)
+nfindall = len_dec(findall)
 
 file = open(BGL_csv_filename, 'r')
 reader = csv.reader(file)
@@ -73,6 +92,17 @@ for line in reader:
     arousal.append(line[5])
     dominance.append(line[8])
 
+
+def flatten(arr):  # takes an pd.Series objects due to duplicate word entries in the provided
+    # files (they exist) and flattens it to separate entries so that our final array
+    # only has float values.
+    new_arr = []
+    for a in arr:
+      if isinstance(a, pd.Series):
+        new_arr.extend(a.values)
+      else:
+        new_arr.append(a)
+    return new_arr
 
 def extract1(comment):
   ''' This function extracts features from a single comment
@@ -146,35 +176,84 @@ def extract1(comment):
   result = re.compile(r'\b(' + r'|'.join(SLANG) + r')\b').findall(comment)
   features_array[0][13] = len(result)
 
+
+  temp_comment = comment.rstrip('\n')
+  sentence_array = temp_comment.split('\n')
+  num_tokens = 0
+  token_sum = 0
+  for sentence in sentence_array:
+      pattern = re.compile('\S+\/\S+')
+      tokens = pattern.findall(sentence)
+      num_tokens += len(tokens)
+      for token in tokens:
+          token_sum += len(str(token))
+
   # 15. Average length of sentences, in tokens
-  sentence_amount = comment.count('\n')+1
-  features_array[0][14] = len(body)/sentence_amount
+  if len(sentence_array) > 0:
+      features_array[0][14] = num_tokens/len(sentence_array)
 
   # 16. Average length of tokens, excluding punctuation-only tokens, in characters
-  num_token = 0
-  sum_token = 0
-  for e in body:
-      if e[0] not in string.punctuation:
-          num_token += 1
-          sum_token += len(e)
-  if num_token!=0:
-    features_array[0][15]
+  if num_tokens > 0:
+    features_array[0][15] = token_sum/num_tokens
 
   # 17. Number of sentences.
-  features_array[0][16] = comment.count('\n') + 1
+  features_array[0][16] = len(sentence_array)
 
   # prepare for 18 - 23
-  sAoA = []
-  sIMG = []
-  sFAM = []
-  valid_word_count = 0
-  for e in body:
-      if e in word1:
-          valid_word_count += 1
-          i = word1.index(e)
-          sAoA.append(int(AoA[i]))
-          sIMG.append(int(IMG[i]))
-          sFAM.append(int(FAM[i]))
+  word_tags = comment.split()
+  if len(word_tags) > 0:  # extract just word from each word/tag pair
+      retrieve_word = r"(/?\w+)(?=/)"  # they are separated by a / with tag
+      extract_words = [findall(retrieve_word, word) for word in word_tags]
+      extract_words = [w[0].lower() for w in extract_words if
+                       len(w) > 0]
+
+  if len(word_tags) > 0:  # extract just word from each word
+      chosen_bgl = []
+      for x in extract_words:  # this is faster than pd.isin, but ugly -_-
+          try:
+              chosen_bgl.append(BGL_word.loc[x])  # some words might not have a value,
+          except:
+              pass
+  # AoA
+  AoA = [x.get("AoA (100-700)", np.nan) for x in chosen_bgl]
+  AoA = flatten(AoA)
+
+  if np.count_nonzero(~np.isnan(AoA)) > 0:
+      # 18. norms average AoA
+      features_array[0][17] = np.nanmean(AoA)
+      # 21. standard deviation AoA
+      features_array[0][20] = np.nanstd(AoA)
+
+  # IMG
+  IMG = [x.get("IMG", np.nan) for x in chosen_bgl]
+  IMG = flatten(IMG)
+  if np.count_nonzero(~np.isnan(IMG)) > 0:
+      # 19. average IMG
+      features_array[0][18] = np.nanmean(IMG)
+      # 22. standard deviation IMG
+      features_array[0][21] = np.nanstd(IMG)
+
+  # FAM
+  FAM = [x.get("FAM", np.nan) for x in chosen_bgl]
+  FAM = flatten(FAM)
+  if np.count_nonzero(~np.isnan(FAM)) > 0:
+      # 20. average FAM
+      features_array[0][19] = np.nanmean(FAM)
+      # 23. standard deviation FAM
+      features_array[0][22] = np.nanstd(FAM)
+
+  # sAoA = []
+  # sIMG = []
+  # sFAM = []
+  # valid_word_count = 0
+  # for e in body:
+  #     if e in word1:
+  #         valid_word_count += 1
+  #         i = word1.index(e)
+  #         sAoA.append(int(AoA[i]))
+  #         sIMG.append(int(IMG[i]))
+  #         sFAM.append(int(FAM[i]))
+
 
   # 18. Average of AoA (100-700) from Bristol, Gilhooly, and Logie norms
   # 19. Average of IMG from Bristol, Gilhooly, and Logie norms
@@ -182,28 +261,61 @@ def extract1(comment):
   # 21. Standard deviation of AoA (100-700) from Bristol, Gilhooly, and Logie norms
   # 22. Standard deviation of IMG from Bristol, Gilhooly, and Logie norms
   # 23. Standard deviation of FAM from Bristol, Gilhooly, and Logie norms
-  if valid_word_count == 0:
-      features_array[0][17:23] = [0,0,0,0,0,0]
-  else:
-      features_array[0][17] = np.mean(sAoA)
-      features_array[0][20] = np.std(sAoA)
-      features_array[0][18] = np.mean(sIMG)
-      features_array[0][21] = np.std(sIMG)
-      features_array[0][19] = np.mean(sFAM)
-      features_array[0][22] = np.std(sFAM)
 
+  # if valid_word_count == 0:
+  #     features_array[0][17:23] = [0,0,0,0,0,0]
+  # else:
+  #     features_array[0][17] = np.mean(sAoA)
+  #     features_array[0][20] = np.std(sAoA)
+  #     features_array[0][18] = np.mean(sIMG)
+  #     features_array[0][21] = np.std(sIMG)
+  #     features_array[0][19] = np.mean(sFAM)
+  #     features_array[0][22] = np.std(sFAM)
+
+
+  chosen_warr = []
+  for x in extract_words:  # again, fastest method
+      try:
+          chosen_warr.append(warringer_word.loc[x])  # some words might not have a value
+      except:
+          pass
+      #  V.Mean.Sum
+      VMS = [x.get("V.Mean.Sum", np.nan) for x in chosen_warr]
+      VMS = flatten(VMS)
+      if np.count_nonzero(~np.isnan(VMS)) > 0:
+          # 24. average V.Mean.Sum
+          features_array[0][23] = np.nanmean(VMS)
+          # 27. standard deviation V.Mean.Sum
+          features_array[0][26] = np.nanstd(VMS)
+      #  A.Mean.Sum
+      AMS = [x.get("A.Mean.Sum", np.nan) for x in chosen_warr]
+      AMS = flatten(AMS)
+      if np.count_nonzero(~np.isnan(AMS)) > 0:
+          # 25. average A.Mean.Sum
+          features_array[0][24] = np.nanmean(AMS)
+          # 28. standard deviation A.Mean.Sum
+          features_array[0][27] = np.nanstd(AMS)
+
+      # D.Mean.Sum
+      DMS = [x.get("D.Mean.Sum", np.nan) for x in chosen_warr]
+      DMS = flatten(DMS)
+      if np.count_nonzero(~np.isnan(DMS)) > 0:
+          # 26. average D.Mean.Sum
+          features_array[0][25] = np.nanmean(DMS)
+          # 29. standard deviation D.Mean.Sum
+          features_array[0][28] = np.nanstd(DMS)
   # prepare for 24 - 29
-  s_valence = []
-  s_dominance = []
-  s_arousal = []
-  valid_word_count = 0
-  for e in body:
-      if e in word2:
-          valid_word_count += 1
-          i = word2.index(e)
-          s_valence.append(float(valence[i]))
-          s_dominance.append(float(dominance[i]))
-          s_arousal.append(float(arousal[i]))
+  # s_valence = []
+  # s_dominance = []
+  # s_arousal = []
+  # valid_word_count = 0
+  # for e in body:
+  #     if e in word2:
+  #         valid_word_count += 1
+  #         i = word2.index(e)
+  #         s_valence.append(float(valence[i]))
+  #         s_dominance.append(float(dominance[i]))
+  #         s_arousal.append(float(arousal[i]))
 
   # 24. Average of V.Mean.Sum from Warringer norms
   # 25. Average of A.Mean.Sum from Warringer norms
@@ -212,15 +324,15 @@ def extract1(comment):
   # 28. Standard deviation of A.Mean.Sum from Warringer norms
   # 29. Standard deviation of D.Mean.Sum from Warringer norms
 
-  if valid_word_count == 0:
-      features_array[0][23:29] = [0,0,0,0,0,0]
-  else:
-      features_array[0][23] = np.mean(s_valence)
-      features_array[0][26] = np.std(s_valence)
-      features_array[0][24] = np.mean(s_dominance)
-      features_array[0][27] = np.std(s_dominance)
-      features_array[0][25] = np.mean(s_arousal)
-      features_array[0][28] = np.std(s_arousal)
+  # if valid_word_count == 0:
+  #     features_array[0][23:29] = [0,0,0,0,0,0]
+  # else:
+  #     features_array[0][23] = np.mean(s_valence)
+  #     features_array[0][26] = np.std(s_valence)
+  #     features_array[0][24] = np.mean(s_dominance)
+  #     features_array[0][27] = np.std(s_dominance)
+  #     features_array[0][25] = np.mean(s_arousal)
+  #     features_array[0][28] = np.std(s_arousal)
 
   return features_array
 
@@ -280,25 +392,6 @@ def main(args):
         commentID = data[i]['id']
         feats[i][:-1] = extract1(comment)
         feats[i][:] = extract2(feats[i][:], comment_file, commentID)
-        # if data[i]['cat'] == 'Left':
-        #     feats[i][-1] = 0
-        #     index = Left_ID.index(data[i]['id'])
-        #     feats[i][29:-1] = Left_data[index][:]
-        #
-        # if data[i]['cat'] == 'Center':
-        #     feats[i][-1] = 1
-        #     index = Center_ID.index(data[i]['id'])
-        #     feats[i][29:-1] = Center_data[index][:]
-        #
-        # if data[i]['cat'] == 'Right':
-        #     feats[i][-1] = 2
-        #     index = Right_ID.index(data[i]['id'])
-        #     feats[i][29:-1] = Right_data[index][:]
-        #
-        # if data[i]['cat'] == 'Alt':
-        #     feats[i][-1] = 3
-        #     index = Alt_ID.index(data[i]['id'])
-        #     feats[i][29:-1] = Alt_data[index][:]
 
         if i % 100 == 0:
             print(i)
