@@ -93,9 +93,8 @@ for line in reader:
     dominance.append(line[8])
 
 
-def flatten(arr):  # takes an pd.Series objects due to duplicate word entries in the provided
-    # files (they exist) and flattens it to separate entries so that our final array
-    # only has float values.
+def flatten(arr):
+    # final array only has float values.
     new_arr = []
     for a in arr:
       if isinstance(a, pd.Series):
@@ -104,238 +103,225 @@ def flatten(arr):  # takes an pd.Series objects due to duplicate word entries in
         new_arr.append(a)
     return new_arr
 
+
 def extract1(comment):
-  ''' This function extracts features from a single comment
-  Parameters:
-      comment : string, the body of a comment (after preprocessing)
-      # bgl: pandas DataFrame of Bristol Gillhooly and Logie features. (to avoid
-      #     needing to reopen every time)
-      # warr: pandas DataFrame of Warringer features. (to avoid needing to
-      #     reopen every time)
-  Returns:
-      feats : numpy Array, a 173-length vector of floating point features (only the first 29 are expected to be filled, here)
-  '''
-  features_array = np.zeros((1, 173))
-  body = re.compile("([\w]+|[\W]+)/(?=[\w]+|[\W]+)").findall(comment)  # left
-  lemma = re.compile("(?=[\w]+|[\W]+)/([\w]+|[\W]+)").findall(comment) #right
+    ''' This function extracts features from a single comment
+      Parameters:
+          comment : string, the body of a comment (after preprocessing)
+          # bgl: pandas DataFrame of Bristol Gillhooly and Logie features. (to avoid
+          #     needing to reopen every time)
+          # warr: pandas DataFrame of Warringer features. (to avoid needing to
+          #     reopen every time)
+      Returns:
+          feats : numpy Array, a 173-length vector of floating point features (only the first 29 are expected to be filled, here)
+    '''
+    features_array = np.zeros((1, 173))
+    body = re.compile("([\w]+|[\W]+)/(?=[\w]+|[\W]+)").findall(comment)  # left
+    lemma = re.compile("(?=[\w]+|[\W]+)/([\w]+|[\W]+)").findall(comment)  # right
 
-  # 1. Number of tokens in uppercase ( 3 letters long)
-  pattern = re.compile('[A-Z]{3,}\/\S+')
-  result = pattern.findall(comment)
-  features_array[0][0] = len(result)
+    # 1. Number of tokens in uppercase ( 3 letters long)
+    pattern = re.compile('[A-Z]{3,}\/\S+')
+    result = pattern.findall(comment)
+    features_array[0][0] = len(result)
 
-  # 2. Number of first-person pronouns
-  result = re.compile(r'\b(' + r'|'.join(FIRST_PERSON_PRONOUNS) + r')\b').findall(comment)
-  features_array[0][1] = len(result)
+    # 2. Number of first-person pronouns
+    result = re.compile(r'\b(' + r'|'.join(FIRST_PERSON_PRONOUNS) + r')\b').findall(comment)
+    features_array[0][1] = len(result)
 
-  # 3. Number of second-person pronouns
-  result = re.compile(r'\b(' + r'|'.join(SECOND_PERSON_PRONOUNS) + r')\b').findall(comment)
-  features_array[0][2] = len(result)
+    # 3. Number of second-person pronouns
+    result = re.compile(r'\b(' + r'|'.join(SECOND_PERSON_PRONOUNS) + r')\b').findall(comment)
+    features_array[0][2] = len(result)
 
-  # 4. Number of third-person pronouns
-  result = re.compile(r'\b(' + r'|'.join(THIRD_PERSON_PRONOUNS) + r')\b').findall(comment)
-  features_array[0][3] = len(result)
+    # 4. Number of third-person pronouns
+    result = re.compile(r'\b(' + r'|'.join(THIRD_PERSON_PRONOUNS) + r')\b').findall(comment)
+    features_array[0][3] = len(result)
 
-  # 5. Number of coordinating conjunctions
+    # 5. Number of coordinating conjunctions
 
-  features_array[0][4] = lemma.count('CC')
-  # 6. Number of past-tense verbs
-  features_array[0][5] = lemma.count('VBD')
+    features_array[0][4] = lemma.count('CC')
+    # 6. Number of past-tense verbs
+    features_array[0][5] = lemma.count('VBD')
 
-  # 7. Number of future-tense verbs
+    # 7. Number of future-tense verbs
 
-  pattern1 = re.compile('((\'ll\/MD\w*|will\/MD\w*|gonna\/\w+)\s+\w+\/VB)')
-  pattern2 = re.compile('(go\/VB\w*\s+to\/TO\w*\s+\w+\/VB)')
-  result1 = pattern1.findall(comment)
-  result2 = pattern2.findall(comment)
-  features_array[0][6] = len(result1) + len(result2)
+    pattern1 = re.compile('((\'ll\/MD\w*|will\/MD\w*|gonna\/\w+)\s+\w+\/VB)')
+    pattern2 = re.compile('(go\/VB\w*\s+to\/TO\w*\s+\w+\/VB)')
+    result1 = pattern1.findall(comment)
+    result2 = pattern2.findall(comment)
+    features_array[0][6] = len(result1) + len(result2)
 
-  # 8. Number of commas
-  pattern = re.compile('\S+/,')
-  result = pattern.findall(comment)
-  features_array[0][7] = len(result)
+    # 8. Number of commas
+    pattern = re.compile('\S+/,')
+    result = pattern.findall(comment)
+    features_array[0][7] = len(result)
 
-  # 9. Number of multi-character punctuation tokens
-  pattern = re.compile('([?!,;:\.\-`"]{2,})\/')
-  result = pattern.findall(comment)
-  features_array[0][8] = len(result)
+    # 9. Number of multi-character punctuation tokens
+    pattern = re.compile('([?!,;:\.\-`"]{2,})\/')
+    result = pattern.findall(comment)
+    features_array[0][8] = len(result)
 
-  # 10. Number of common nouns
-  features_array[0][9] = lemma.count('NN') + lemma.count('NNS')
+    # 10. Number of common nouns
+    features_array[0][9] = lemma.count('NN') + lemma.count('NNS')
 
-  # 11. Number of proper nouns
-  features_array[0][10] = lemma.count('NNP') + lemma.count('NNPS')
+    # 11. Number of proper nouns
+    features_array[0][10] = lemma.count('NNP') + lemma.count('NNPS')
 
-  # 12. Number of adverbs
-  features_array[0][11] = lemma.count('RB') + lemma.count('RBR') + lemma.count('RBS')
+    # 12. Number of adverbs
+    features_array[0][11] = lemma.count('RB') + lemma.count('RBR') + lemma.count('RBS')
 
-  # 13. Number of wh- words
-  features_array[0][12] = lemma.count('WDT') +  lemma.count('WP') + lemma.count('WP$') + lemma.count('WRB')
+    # 13. Number of wh- words
+    features_array[0][12] = lemma.count('WDT') + lemma.count('WP') + lemma.count('WP$') + lemma.count('WRB')
 
-  # 14. Number of slang acronyms
-  result = re.compile(r'\b(' + r'|'.join(SLANG) + r')\b').findall(comment)
-  features_array[0][13] = len(result)
+    # 14. Number of slang acronyms
+    result = re.compile(r'\b(' + r'|'.join(SLANG) + r')\b').findall(comment)
+    features_array[0][13] = len(result)
 
+    temp_comment = comment.rstrip('\n')
+    sentence_array = temp_comment.split('\n')
+    num_tokens = 0
+    token_sum = 0
+    for sentence in sentence_array:
+        pattern = re.compile('\S+\/\S+')
+        tokens = pattern.findall(sentence)
+        num_tokens += len(tokens)
+        for token in tokens:
+            token_sum += len(str(token))
 
-  temp_comment = comment.rstrip('\n')
-  sentence_array = temp_comment.split('\n')
-  num_tokens = 0
-  token_sum = 0
-  for sentence in sentence_array:
-      pattern = re.compile('\S+\/\S+')
-      tokens = pattern.findall(sentence)
-      num_tokens += len(tokens)
-      for token in tokens:
-          token_sum += len(str(token))
+    # 15. Average length of sentences, in tokens
+    if len(sentence_array) > 0:
+        features_array[0][14] = num_tokens / len(sentence_array)
 
-  # 15. Average length of sentences, in tokens
-  if len(sentence_array) > 0:
-      features_array[0][14] = num_tokens/len(sentence_array)
+    # 16. Average length of tokens, excluding punctuation-only tokens, in characters
+    if num_tokens > 0:
+        features_array[0][15] = token_sum / num_tokens
 
-  # 16. Average length of tokens, excluding punctuation-only tokens, in characters
-  if num_tokens > 0:
-    features_array[0][15] = token_sum/num_tokens
+    # 17. Number of sentences.
+    features_array[0][16] = len(sentence_array)
 
-  # 17. Number of sentences.
-  features_array[0][16] = len(sentence_array)
+    # prepare for 18 - 29
+    word_tags = comment.split()
+    if len(word_tags) > 0:  # extract just word from each word/tag pair
+        retrieve_word = r"(/?\w+)(?=/)"  # they are separated by a / with tag
+        extract_words = [findall(retrieve_word, word) for word in word_tags]
+        extract_words = [w[0].lower() for w in extract_words if
+                         len(w) > 0]
 
-  # prepare for 18 - 23
-  word_tags = comment.split()
-  if len(word_tags) > 0:  # extract just word from each word/tag pair
-      retrieve_word = r"(/?\w+)(?=/)"  # they are separated by a / with tag
-      extract_words = [findall(retrieve_word, word) for word in word_tags]
-      extract_words = [w[0].lower() for w in extract_words if
-                       len(w) > 0]
+    # 18 - 23
+    if len(word_tags) > 0:
+        chosen_bgl = []
+        for x in extract_words:
+            try:
+                chosen_bgl.append(BGL_word.loc[x])  # some words might not have a value
+            except:
+                pass
 
-  if len(word_tags) > 0:  # extract just word from each word
-      chosen_bgl = []
-      for x in extract_words:  # this is faster than pd.isin, but ugly -_-
-          try:
-              chosen_bgl.append(BGL_word.loc[x])  # some words might not have a value,
-          except:
-              pass
+            # AoA
+            AoA = [x.get("AoA (100-700)", np.nan) for x in chosen_bgl]
+            AoA = flatten(AoA)
 
-          # AoA
-          AoA = [x.get("AoA (100-700)", np.nan) for x in chosen_bgl]
-          AoA = flatten(AoA)
+            if np.count_nonzero(~np.isnan(AoA)) > 0:
+                # 18. norms average AoA
+                features_array[0][17] = np.nanmean(AoA)
+                # 21. standard deviation AoA
+                features_array[0][20] = np.nanstd(AoA)
 
-          if np.count_nonzero(~np.isnan(AoA)) > 0:
-              # 18. norms average AoA
-              features_array[0][17] = np.nanmean(AoA)
-              # 21. standard deviation AoA
-              features_array[0][20] = np.nanstd(AoA)
+            # IMG
+            IMG = [x.get("IMG", np.nan) for x in chosen_bgl]
+            IMG = flatten(IMG)
+            if np.count_nonzero(~np.isnan(IMG)) > 0:
+                # 19. average IMG
+                features_array[0][18] = np.nanmean(IMG)
+                # 22. standard deviation IMG
+                features_array[0][21] = np.nanstd(IMG)
 
-          # IMG
-          IMG = [x.get("IMG", np.nan) for x in chosen_bgl]
-          IMG = flatten(IMG)
-          if np.count_nonzero(~np.isnan(IMG)) > 0:
-              # 19. average IMG
-              features_array[0][18] = np.nanmean(IMG)
-              # 22. standard deviation IMG
-              features_array[0][21] = np.nanstd(IMG)
+            # FAM
+            FAM = [x.get("FAM", np.nan) for x in chosen_bgl]
+            FAM = flatten(FAM)
+            if np.count_nonzero(~np.isnan(FAM)) > 0:
+                # 20. average FAM
+                features_array[0][19] = np.nanmean(FAM)
+                # 23. standard deviation FAM
+                features_array[0][22] = np.nanstd(FAM)
 
-          # FAM
-          FAM = [x.get("FAM", np.nan) for x in chosen_bgl]
-          FAM = flatten(FAM)
-          if np.count_nonzero(~np.isnan(FAM)) > 0:
-              # 20. average FAM
-              features_array[0][19] = np.nanmean(FAM)
-              # 23. standard deviation FAM
-              features_array[0][22] = np.nanstd(FAM)
+    # sAoA = []
+    # sIMG = []
+    # sFAM = []
+    # valid_word_count = 0
+    # for e in body:
+    #     if e in word1:
+    #         valid_word_count += 1
+    #         i = word1.index(e)
+    #         sAoA.append(int(AoA[i]))
+    #         sIMG.append(int(IMG[i]))
+    #         sFAM.append(int(FAM[i]))
 
-  # sAoA = []
-  # sIMG = []
-  # sFAM = []
-  # valid_word_count = 0
-  # for e in body:
-  #     if e in word1:
-  #         valid_word_count += 1
-  #         i = word1.index(e)
-  #         sAoA.append(int(AoA[i]))
-  #         sIMG.append(int(IMG[i]))
-  #         sFAM.append(int(FAM[i]))
+    # if valid_word_count == 0:
+    #     features_array[0][17:23] = [0,0,0,0,0,0]
+    # else:
+    #     features_array[0][17] = np.mean(sAoA)
+    #     features_array[0][20] = np.std(sAoA)
+    #     features_array[0][18] = np.mean(sIMG)
+    #     features_array[0][21] = np.std(sIMG)
+    #     features_array[0][19] = np.mean(sFAM)
+    #     features_array[0][22] = np.std(sFAM)
 
+    # 24 - 29
+    if len(word_tags) > 0:
+        chosen_warr = []
+        for x in extract_words:  # again, fastest method
+            try:
+                chosen_warr.append(warringer_word.loc[x])  # some words might not have a value
+            except:
+                pass
+            #  V.Mean.Sum
+            VMS = [x.get("V.Mean.Sum", np.nan) for x in chosen_warr]
+            VMS = flatten(VMS)
+            if np.count_nonzero(~np.isnan(VMS)) > 0:
+                # 24. average V.Mean.Sum
+                features_array[0][23] = np.nanmean(VMS)
+                # 27. standard deviation V.Mean.Sum
+                features_array[0][26] = np.nanstd(VMS)
+            #  A.Mean.Sum
+            AMS = [x.get("A.Mean.Sum", np.nan) for x in chosen_warr]
+            AMS = flatten(AMS)
+            if np.count_nonzero(~np.isnan(AMS)) > 0:
+                # 25. average A.Mean.Sum
+                features_array[0][24] = np.nanmean(AMS)
+                # 28. standard deviation A.Mean.Sum
+                features_array[0][27] = np.nanstd(AMS)
 
-  # 18. Average of AoA (100-700) from Bristol, Gilhooly, and Logie norms
-  # 19. Average of IMG from Bristol, Gilhooly, and Logie norms
-  # 20. Average of FAM from Bristol, Gilhooly, and Logie norms
-  # 21. Standard deviation of AoA (100-700) from Bristol, Gilhooly, and Logie norms
-  # 22. Standard deviation of IMG from Bristol, Gilhooly, and Logie norms
-  # 23. Standard deviation of FAM from Bristol, Gilhooly, and Logie norms
+            # D.Mean.Sum
+            DMS = [x.get("D.Mean.Sum", np.nan) for x in chosen_warr]
+            DMS = flatten(DMS)
+            if np.count_nonzero(~np.isnan(DMS)) > 0:
+                # 26. average D.Mean.Sum
+                features_array[0][25] = np.nanmean(DMS)
+                # 29. standard deviation D.Mean.Sum
+                features_array[0][28] = np.nanstd(DMS)
 
-  # if valid_word_count == 0:
-  #     features_array[0][17:23] = [0,0,0,0,0,0]
-  # else:
-  #     features_array[0][17] = np.mean(sAoA)
-  #     features_array[0][20] = np.std(sAoA)
-  #     features_array[0][18] = np.mean(sIMG)
-  #     features_array[0][21] = np.std(sIMG)
-  #     features_array[0][19] = np.mean(sFAM)
-  #     features_array[0][22] = np.std(sFAM)
+    # s_valence = []
+    # s_dominance = []
+    # s_arousal = []
+    # valid_word_count = 0
+    # for e in body:
+    #     if e in word2:
+    #         valid_word_count += 1
+    #         i = word2.index(e)
+    #         s_valence.append(float(valence[i]))
+    #         s_dominance.append(float(dominance[i]))
+    #         s_arousal.append(float(arousal[i]))
 
-  if len(word_tags) > 0:
-      chosen_warr = []
-      for x in extract_words:  # again, fastest method
-          try:
-              chosen_warr.append(warringer_word.loc[x])  # some words might not have a value
-          except:
-              pass
-          #  V.Mean.Sum
-          VMS = [x.get("V.Mean.Sum", np.nan) for x in chosen_warr]
-          VMS = flatten(VMS)
-          if np.count_nonzero(~np.isnan(VMS)) > 0:
-              # 24. average V.Mean.Sum
-              features_array[0][23] = np.nanmean(VMS)
-              # 27. standard deviation V.Mean.Sum
-              features_array[0][26] = np.nanstd(VMS)
-          #  A.Mean.Sum
-          AMS = [x.get("A.Mean.Sum", np.nan) for x in chosen_warr]
-          AMS = flatten(AMS)
-          if np.count_nonzero(~np.isnan(AMS)) > 0:
-              # 25. average A.Mean.Sum
-              features_array[0][24] = np.nanmean(AMS)
-              # 28. standard deviation A.Mean.Sum
-              features_array[0][27] = np.nanstd(AMS)
+    # if valid_word_count == 0:
+    #     features_array[0][23:29] = [0,0,0,0,0,0]
+    # else:
+    #     features_array[0][23] = np.mean(s_valence)
+    #     features_array[0][26] = np.std(s_valence)
+    #     features_array[0][24] = np.mean(s_dominance)
+    #     features_array[0][27] = np.std(s_dominance)
+    #     features_array[0][25] = np.mean(s_arousal)
+    #     features_array[0][28] = np.std(s_arousal)
 
-          # D.Mean.Sum
-          DMS = [x.get("D.Mean.Sum", np.nan) for x in chosen_warr]
-          DMS = flatten(DMS)
-          if np.count_nonzero(~np.isnan(DMS)) > 0:
-              # 26. average D.Mean.Sum
-              features_array[0][25] = np.nanmean(DMS)
-              # 29. standard deviation D.Mean.Sum
-              features_array[0][28] = np.nanstd(DMS)
-  # prepare for 24 - 29
-  # s_valence = []
-  # s_dominance = []
-  # s_arousal = []
-  # valid_word_count = 0
-  # for e in body:
-  #     if e in word2:
-  #         valid_word_count += 1
-  #         i = word2.index(e)
-  #         s_valence.append(float(valence[i]))
-  #         s_dominance.append(float(dominance[i]))
-  #         s_arousal.append(float(arousal[i]))
-
-  # 24. Average of V.Mean.Sum from Warringer norms
-  # 25. Average of A.Mean.Sum from Warringer norms
-  # 26. Average of D.Mean.Sum from Warringer norms
-  # 27. Standard deviation of V.Mean.Sum from Warringer norms
-  # 28. Standard deviation of A.Mean.Sum from Warringer norms
-  # 29. Standard deviation of D.Mean.Sum from Warringer norms
-
-  # if valid_word_count == 0:
-  #     features_array[0][23:29] = [0,0,0,0,0,0]
-  # else:
-  #     features_array[0][23] = np.mean(s_valence)
-  #     features_array[0][26] = np.std(s_valence)
-  #     features_array[0][24] = np.mean(s_dominance)
-  #     features_array[0][27] = np.std(s_dominance)
-  #     features_array[0][25] = np.mean(s_arousal)
-  #     features_array[0][28] = np.std(s_arousal)
-
-  return features_array
+    return features_array
 
 
 def extract2(feat, comment_class, comment_id):
