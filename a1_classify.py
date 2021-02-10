@@ -25,19 +25,30 @@ from sklearn.linear_model import SGDClassifier
 import numpy as np
 np.random.seed(401)
 
+classifiers = [SGDClassifier(), GaussianNB(),
+               RandomForestClassifier(n_estimators=10, max_depth=5),
+               MLPClassifier(alpha=0.05), AdaBoostClassifier()]
+
 def accuracy(C):
     ''' Compute accuracy given Numpy array confusion matrix C. Returns a floating point value '''
-    print ('TODO')
+    result = 0
+    if np.sum(C) != 0:
+        result = np.divide(np.trace(C), np.sum(C))
+    return result
 
 
 def recall(C):
     ''' Compute recall given Numpy array confusion matrix C. Returns a list of floating point values '''
-    print ('TODO')
+    denominators = np.sum(C, axis=1)
+    result = np.divide(np.diagonal(C), denominators)
+    return result
 
 
 def precision(C):
     ''' Compute precision given Numpy array confusion matrix C. Returns a list of floating point values '''
-    print ('TODO')
+    denominators = np.sum(C, axis=0)
+    result = np.divide(np.diagonal(C), denominators)
+    return result
 
 
 def class31(output_dir, X_train, X_test, y_train, y_test):
@@ -53,7 +64,8 @@ def class31(output_dir, X_train, X_test, y_train, y_test):
     Returns:
        i: int, the index of the supposed best classifier
     '''
-    print('TODO Section 3.1')
+    if not os.path.exists(f"{output_dir}"):
+        os.makedirs(f"{output_dir}")
 
     with open(f"{output_dir}/a1_3.1.txt", "w") as outf:
         # For each classifier, compute results and write the following output:
