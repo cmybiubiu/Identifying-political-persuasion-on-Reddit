@@ -287,14 +287,14 @@ def main(args):
     global Center_ID
     Center_ID = open(feats_path + 'Center_IDs.txt', 'r').read().split('\n')  # List of IDs
 
-    BGL_csv_filename = '/u/cs401/Wordlists/BristolNorms+GilhoolyLogie.csv'
-    Warringer_csv_filename = '/u/cs401/Wordlists/Ratings_Warriner_et_al.csv'
+    BGL_csv_filename = 'BristolNorms+GilhoolyLogie.csv'
+    Warringer_csv_filename = 'Ratings_Warriner_et_al.csv'
 
     global BGL
-    BGL = pd.read_csv(BGL_csv_filename,
+    BGL = pd.read_csv(wordlists_path+BGL_csv_filename,
                       usecols=["WORD", "AoA (100-700)", "IMG", "FAM"])
     global warringer
-    warringer = pd.read_csv(Warringer_csv_filename,
+    warringer = pd.read_csv(wordlists_path+Warringer_csv_filename,
                             usecols=["Word", "V.Mean.Sum", "D.Mean.Sum", "A.Mean.Sum"])
 
     global BGL_word
@@ -324,8 +324,8 @@ def main(args):
         feats[i][:-1] = extract1(comment)
         feats[i][:] = extract2(feats[i][:], comment_file, commentID)
 
-        # if i % 100 == 0:
-        #     print(i)
+        if i % 100 == 0:
+            print(i)
 
     np.savez_compressed(args.output, feats)
 
@@ -335,8 +335,11 @@ if __name__ == "__main__":
     parser.add_argument("-o", "--output", help="Directs the output to a filename of your choice", required=True)
     parser.add_argument("-i", "--input", help="The input JSON file, preprocessed as in Task 1", required=True)
     parser.add_argument("-p", "--a1_dir", help="Path to csc401 A1 directory. By default it is set to the cdf directory for the assignment.", default="/u/cs401/A1/")
+    parser.add_argument("-pw", "--wordlists_dir", help="Path to csc401 Worldlists directory. By default it is set to the cdf directory for the assignment.", default="/u/cs401/Worldlists/")
+
     args = parser.parse_args()
 
     feats_path = os.path.join(args.a1_dir, 'feats/')
+    wordlists_path = args.wordlists_dir
 
     main(args)
