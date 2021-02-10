@@ -275,9 +275,9 @@ def main(args):
     # into feats. (Note that these rely on each data point's class,
     # which is why we can't add them in extract1).
 
-    for i in range(feats.shape[0]):
-        feats[i][0:28] = extract1(data[i]['body'])
-        feats[i][:] = extract2(feats[i][:], data[i]['cat'], data[i]['id'])
+    for i, comment in enumerate(data):
+        feats[i][0:28] = extract1(comment['body'])
+        feats[i][:] = extract2(feats[i][:], comment['cat'], comment['id'])
         if i % 100 == 0:
             print(i)
 
