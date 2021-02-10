@@ -212,6 +212,7 @@ def extract1(comment):
   # 27. Standard deviation of V.Mean.Sum from Warringer norms
   # 28. Standard deviation of A.Mean.Sum from Warringer norms
   # 29. Standard deviation of D.Mean.Sum from Warringer norms
+
   if valid_word_count == 0:
       features_array[0][23:28] = [0,0,0,0,0,0]
   else:
@@ -254,9 +255,9 @@ def extract2(feat, comment_class, comment_id):
         feat[0][29:-1] = Right_data[index][:]
 
     if comment_class == 'Alt':
-        feat[0][-1] = 3
         index = Alt_ID.index(comment_id)
         feat[0][29:-1] = Alt_data[index][:]
+        feat[0][-1] = 3
 
     return feat
 
@@ -268,19 +269,15 @@ def main(args):
     data = json.load(open(args.input))
     feats = np.zeros((len(data), 173+1))
 
-    # load files
-
-
-
-    # TODO: Call extract1 for each datatpoint to find the first 29 features.
+    # Call extract1 for each datatpoint to find the first 29 features.
     # Add these to feats.
-    # TODO: Call extract2 for each feature vector to copy LIWC features (features 30-173)
+    # Call extract2 for each feature vector to copy LIWC features (features 30-173)
     # into feats. (Note that these rely on each data point's class,
     # which is why we can't add them in extract1).
 
     for i in range(feats.shape[0]):
-        feats[i][:-1] = extract1(data[i]['body'])
-        feats[i][:-1] = extract2(feats[i, :-1], data[i]['cat'], data[i]['id'])
+        feats[i][0:28] = extract1(data[i]['body'])
+        feats[i][:] = extract2(feats[i][:], data[i]['cat'], data[i]['id'])
         if i % 100 == 0:
             print(i)
 
