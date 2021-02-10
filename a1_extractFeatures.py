@@ -254,9 +254,10 @@ def extract2(feat, comment_class, comment_id):
         feat[0][29:-1] = Right_data[index][:]
 
     if comment_class == 'Alt':
+        feat[0][-1] = 3
         index = Alt_ID.index(comment_id)
         feat[0][29:-1] = Alt_data[index][:]
-        feat[0][-1] = 3
+
 
     return feat
 
@@ -279,7 +280,7 @@ def main(args):
         comment_file = data[i]['cat']
         commentID = data[i]['id']
         feats[i][:-1] = extract1(comment)
-        feats[i][:] = extract2(feats[i][:], comment_file, commentID)
+        feats[i][:-1] = extract2(feats[i][:-1], comment_file, commentID)
         if i % 100 == 0:
             print(i)
 
