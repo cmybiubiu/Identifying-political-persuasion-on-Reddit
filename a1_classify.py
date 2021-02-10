@@ -78,7 +78,6 @@ def class31(output_dir, X_train, X_test, y_train, y_test):
 
     with open(f"{output_dir}/a1_3.1.txt", "w") as outf:
         for i, classifier_clone in enumerate(classifiers):
-            print(i)
             classifier = clone(classifier_clone)
             classifier.fit(X_train, y_train)
             y_pred = classifier.predict(X_test)
@@ -285,11 +284,10 @@ if __name__ == "__main__":
     X_train, y_train = shuffle(X_train, y_train)
 
     # 3.1
-    # print("Processing 3.1")
-    # iBest = class31(args.output_dir, X_train, X_test, y_train, y_test)
+    print("Processing 3.1")
+    iBest = class31(args.output_dir, X_train, X_test, y_train, y_test)
 
     # 3.2
-    iBest =4
     print("Processing 3.2")
     (X_1k, y_1k) = class32(args.output_dir, X_train, X_test, y_train, y_test, iBest)
 
@@ -298,6 +296,6 @@ if __name__ == "__main__":
     class33(args.output_dir, X_train, X_test, y_train, y_test, iBest, X_1k, y_1k)
 
     # 3.4
-    # print("Processing 3.4")
-    # class34(args.output_dir, X_train, X_test, y_train, y_test, iBest)
+    print("Processing 3.4")
+    class34(args.output_dir, X_train, X_test, y_train, y_test, iBest)
 

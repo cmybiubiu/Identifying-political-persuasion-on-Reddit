@@ -321,8 +321,8 @@ def main(args):
         feats[i][:-1] = extract1(comment)
         feats[i][:] = extract2(feats[i][:], comment_file, commentID)
 
-        if i % 100 == 0:
-            print(i)
+        # if i % 100 == 0:
+        #     print(i)
 
     np.savez_compressed(args.output, feats)
 
