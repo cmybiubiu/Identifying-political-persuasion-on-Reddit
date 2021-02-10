@@ -73,27 +73,28 @@ def class31(output_dir, X_train, X_test, y_train, y_test):
         os.makedirs(f"{output_dir}")
 
     iBest = 0
-    accBest = 0
+    acc_best = 0
 
     with open(f"{output_dir}/a1_3.1.txt", "w") as outf:
         for i, classifier_clone in enumerate(classifiers):
+            print(i + "\n")
             classifier = clone(classifier_clone)
             classifier.fit(X_train, y_train)
             y_pred = classifier.predict(X_test)
             conf_matrix = confusion_matrix(y_test, y_pred)
 
-            accuracy = accuracy(conf_matrix)
-            recall = recall(conf_matrix)
-            precision = precision(conf_matrix)
-            if accuracy > accBest:
-                accBest = accuracy
+            accuracy_result = accuracy(conf_matrix)
+            recall_result = recall(conf_matrix)
+            precision_result = precision(conf_matrix)
+            if accuracy_result > acc_best:
+                acc_best = accuracy_result
                 iBest = i
 
             classifier_name = str(classifier.__class__).split(".")[-1].replace(">", "").replace("\'", "")
             outf.write(f'Results for {classifier_name}:\n')  # Classifier name
-            outf.write(f'\tAccuracy: {accuracy:.4f}\n')
-            outf.write(f'\tRecall: {[round(item, 4) for item in recall]}\n')
-            outf.write(f'\tPrecision: {[round(item, 4) for item in precision]}\n')
+            outf.write(f'\tAccuracy: {accuracy_result:.4f}\n')
+            outf.write(f'\tRecall: {[round(item, 4) for item in recall_result]}\n')
+            outf.write(f'\tPrecision: {[round(item, 4) for item in precision_result]}\n')
             outf.write(f'\tConfusion Matrix: \n{conf_matrix}\n\n')
 
         # For each classifier, compute results and write the following output:
