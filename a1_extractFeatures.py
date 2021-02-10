@@ -85,9 +85,7 @@ def extract1(comment):
   Returns:
       feats : numpy Array, a 173-length vector of floating point features (only the first 29 are expected to be filled, here)
   '''
-
   features_array = np.zeros((1, 173))
-
   body = re.compile("([\w]+|[\W]+)/(?=[\w]+|[\W]+)").findall(comment)  # left
   lemma = re.compile("(?=[\w]+|[\W]+)/([\w]+|[\W]+)").findall(comment) #right
 
@@ -109,12 +107,13 @@ def extract1(comment):
   features_array[0][3] = len(result)
 
   # 5. Number of coordinating conjunctions
-  features_array[0][4] = lemma.count('CC')
 
+  features_array[0][4] = lemma.count('CC')
   # 6. Number of past-tense verbs
   features_array[0][5] = lemma.count('VBD')
 
   # 7. Number of future-tense verbs
+
   pattern1 = re.compile('((\'ll\/MD\w*|will\/MD\w*|gonna\/\w+)\s+\w+\/VB)')
   pattern2 = re.compile('(go\/VB\w*\s+to\/TO\w*\s+\w+\/VB)')
   result1 = pattern1.findall(comment)
@@ -275,9 +274,12 @@ def main(args):
     # into feats. (Note that these rely on each data point's class,
     # which is why we can't add them in extract1).
 
-    for i, comment in enumerate(data):
-        feats[i][:-1] = extract1(comment['body'])
-        feats[i][:] = extract2(feats[i][:], comment['cat'], comment['id'])
+    for i in range(feats.shape[0]):
+        comment = data[i]['body']
+        comment_file = data[i]['cat']
+        commentID = data[i]['id']
+        feats[i][:-1] = extract1(comment)
+        feats[i][:] = extract2(feats[i][:], comment_file, commentID)
         if i % 100 == 0:
             print(i)
 
