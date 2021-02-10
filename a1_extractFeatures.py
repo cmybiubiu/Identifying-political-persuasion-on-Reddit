@@ -183,7 +183,7 @@ def extract1(comment):
   # 22. Standard deviation of IMG from Bristol, Gilhooly, and Logie norms
   # 23. Standard deviation of FAM from Bristol, Gilhooly, and Logie norms
   if valid_word_count == 0:
-      features_array[0][17:22] = [0,0,0,0,0,0]
+      features_array[0][17:23] = [0,0,0,0,0,0]
   else:
       features_array[0][17] = np.mean(sAoA)
       features_array[0][20] = np.std(sAoA)
@@ -213,7 +213,7 @@ def extract1(comment):
   # 29. Standard deviation of D.Mean.Sum from Warringer norms
 
   if valid_word_count == 0:
-      features_array[0][23:28] = [0,0,0,0,0,0]
+      features_array[0][23:29] = [0,0,0,0,0,0]
   else:
       features_array[0][23] = np.mean(s_valence)
       features_array[0][26] = np.std(s_valence)
