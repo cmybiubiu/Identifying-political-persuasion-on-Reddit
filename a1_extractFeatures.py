@@ -279,7 +279,7 @@ def main(args):
         comment_file = data[i]['cat']
         commentID = data[i]['id']
         feats[i][:-1] = extract1(comment)
-        feats[i][:] = extract2(feats[i][:], comment_file, commentID)
+        feats[i][:-1] = extract2(feats[i][:-1], comment_file, commentID)
         if i % 100 == 0:
             print(i)
 
