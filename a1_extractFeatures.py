@@ -240,23 +240,23 @@ def extract2(feat, comment_class, comment_id):
     '''
     if comment_class == 'Left':
         index = Left_ID.index(comment_id)
-        feat[29:137] = Left_data[index][:]
-        feat[137] = 0
+        feat[29:-1] = Left_data[index][:]
+        feat[-1] = 0
 
     elif comment_class == 'Center':
         index = Center_ID.index(comment_id)
-        feat[29:137] = Center_data[index][:]
-        feat[137] = 1
+        feat[29:-1] = Center_data[index][:]
+        feat[-1] = 1
 
     elif comment_class == 'Right':
         index = Right_ID.index(comment_id)
-        feat[29:137] = Right_data[index][:]
-        feat[137] = 2
+        feat[29:-1] = Right_data[index][:]
+        feat[-1] = 2
 
     elif comment_class == 'Alt':
         index = Alt_ID.index(comment_id)
-        feat[29:137] = Alt_data[index][:]
-        feat[137] = 3
+        feat[29:-1] = Alt_data[index][:]
+        feat[-1] = 3
 
     return feat
 
