@@ -20,7 +20,6 @@ import pandas as pd
 import functools
 
 
-
 # Provided wordlists.
 FIRST_PERSON_PRONOUNS = {
     'i', 'me', 'my', 'mine', 'we', 'us', 'our', 'ours'}
@@ -36,71 +35,21 @@ SLANG = {
     'afn', 'bbs', 'cya', 'ez', 'f2f', 'gtr', 'ic', 'jk', 'k', 'ly', 'ya',
     'nm', 'np', 'plz', 'ru', 'so', 'tc', 'tmi', 'ym', 'ur', 'u', 'sol', 'fml'}
 
-path = '/u/cs401/A1/feats/'
-Alt_data = np.load(path + 'Alt_feats.dat.npy')  # <class 'numpy.ndarray'>   (200272, 144)
-Alt_ID = open(path + 'Alt_IDs.txt', 'r').read().split('\n')  # List of IDs
-
-Right_data = np.load(path + 'Right_feats.dat.npy')  # <class 'numpy.ndarray'>   (200272, 144)
-Right_ID = open(path + 'Right_IDs.txt', 'r').read().split('\n')  # List of IDs
-
-Left_data = np.load(path + 'Left_feats.dat.npy')  # <class 'numpy.ndarray'>   (200272, 144)
-Left_ID = open(path + 'Left_IDs.txt', 'r').read().split('\n')  # List of IDs
-
-Center_data = np.load(path + 'Center_feats.dat.npy')  # <class 'numpy.ndarray'>   (200272, 144)
-Center_ID = open(path + 'Center_IDs.txt', 'r').read().split('\n')  # List of IDs
 
 def len_dec(fn):  # decorator to automatically take the length of a list returned by 'fn'
-  def len_fn(*args, **kwargs):
-    return len(fn(*args, **kwargs))
-  return len_fn
-
-BGL_csv_filename = '/u/cs401/Wordlists/BristolNorms+GilhoolyLogie.csv'
-Warringer_csv_filename = '/u/cs401/Wordlists/Ratings_Warriner_et_al.csv'
-
-BGL = pd.read_csv(BGL_csv_filename,
-                  usecols=["WORD", "AoA (100-700)", "IMG", "FAM"])
-warringer = pd.read_csv(Warringer_csv_filename,
-                   usecols=["Word", "V.Mean.Sum", "D.Mean.Sum", "A.Mean.Sum"])
-
-BGL_word = BGL.set_index(['WORD'])
-warringer_word = warringer.set_index(['Word'])
-
-findall = functools.partial(re.findall, flags=re.IGNORECASE)
-nfindall = len_dec(findall)
-
-file = open(BGL_csv_filename, 'r')
-reader = csv.reader(file)
-word1 = []
-AoA = []
-IMG = []
-FAM = []
-for line in reader:
-    word1.append(line[1])
-    AoA.append(line[3])
-    IMG.append(line[4])
-    FAM.append(line[5])
-
-file = open(Warringer_csv_filename, "r")
-reader = csv.reader(file)
-word2 = []
-valence = []
-arousal = []
-dominance = []
-for line in reader:
-    word2.append(line[1])
-    valence.append(line[2])
-    arousal.append(line[5])
-    dominance.append(line[8])
+    def len_fn(*args, **kwargs):
+        return len(fn(*args, **kwargs))
+    return len_fn
 
 
 def flatten(arr):
     # final array only has float values.
     new_arr = []
     for a in arr:
-      if isinstance(a, pd.Series):
-        new_arr.extend(a.values)
-      else:
-        new_arr.append(a)
+        if isinstance(a, pd.Series):
+            new_arr.extend(a.values)
+        else:
+            new_arr.append(a)
     return new_arr
 
 
@@ -137,13 +86,12 @@ def extract1(comment):
     features_array[0][3] = len(result)
 
     # 5. Number of coordinating conjunctions
-
     features_array[0][4] = lemma.count('CC')
+
     # 6. Number of past-tense verbs
     features_array[0][5] = lemma.count('VBD')
 
     # 7. Number of future-tense verbs
-
     pattern1 = re.compile('((\'ll\/MD\w*|will\/MD\w*|gonna\/\w+)\s+\w+\/VB)')
     pattern2 = re.compile('(go\/VB\w*\s+to\/TO\w*\s+\w+\/VB)')
     result1 = pattern1.findall(comment)
@@ -176,6 +124,7 @@ def extract1(comment):
     result = re.compile(r'\b(' + r'|'.join(SLANG) + r')\b').findall(comment)
     features_array[0][13] = len(result)
 
+    # prepare 15 - 17
     temp_comment = comment.rstrip('\n')
     sentence_array = temp_comment.split('\n')
     num_tokens = 0
@@ -243,32 +192,11 @@ def extract1(comment):
                 # 23. standard deviation FAM
                 features_array[0][22] = np.nanstd(FAM)
 
-    # sAoA = []
-    # sIMG = []
-    # sFAM = []
-    # valid_word_count = 0
-    # for e in body:
-    #     if e in word1:
-    #         valid_word_count += 1
-    #         i = word1.index(e)
-    #         sAoA.append(int(AoA[i]))
-    #         sIMG.append(int(IMG[i]))
-    #         sFAM.append(int(FAM[i]))
-
-    # if valid_word_count == 0:
-    #     features_array[0][17:23] = [0,0,0,0,0,0]
-    # else:
-    #     features_array[0][17] = np.mean(sAoA)
-    #     features_array[0][20] = np.std(sAoA)
-    #     features_array[0][18] = np.mean(sIMG)
-    #     features_array[0][21] = np.std(sIMG)
-    #     features_array[0][19] = np.mean(sFAM)
-    #     features_array[0][22] = np.std(sFAM)
 
     # 24 - 29
     if len(word_tags) > 0:
         chosen_warr = []
-        for x in extract_words:  # again, fastest method
+        for x in extract_words:
             try:
                 chosen_warr.append(warringer_word.loc[x])  # some words might not have a value
             except:
@@ -289,7 +217,6 @@ def extract1(comment):
                 features_array[0][24] = np.nanmean(AMS)
                 # 28. standard deviation A.Mean.Sum
                 features_array[0][27] = np.nanstd(AMS)
-
             # D.Mean.Sum
             DMS = [x.get("D.Mean.Sum", np.nan) for x in chosen_warr]
             DMS = flatten(DMS)
@@ -298,28 +225,6 @@ def extract1(comment):
                 features_array[0][25] = np.nanmean(DMS)
                 # 29. standard deviation D.Mean.Sum
                 features_array[0][28] = np.nanstd(DMS)
-
-    # s_valence = []
-    # s_dominance = []
-    # s_arousal = []
-    # valid_word_count = 0
-    # for e in body:
-    #     if e in word2:
-    #         valid_word_count += 1
-    #         i = word2.index(e)
-    #         s_valence.append(float(valence[i]))
-    #         s_dominance.append(float(dominance[i]))
-    #         s_arousal.append(float(arousal[i]))
-
-    # if valid_word_count == 0:
-    #     features_array[0][23:29] = [0,0,0,0,0,0]
-    # else:
-    #     features_array[0][23] = np.mean(s_valence)
-    #     features_array[0][26] = np.std(s_valence)
-    #     features_array[0][24] = np.mean(s_dominance)
-    #     features_array[0][27] = np.std(s_dominance)
-    #     features_array[0][25] = np.mean(s_arousal)
-    #     features_array[0][28] = np.std(s_arousal)
 
     return features_array
 
@@ -362,6 +267,46 @@ def extract2(feat, comment_class, comment_id):
 
 def main(args):
     #Declare necessary global variables here.
+    path = '/u/cs401/A1/feats/'
+    global Alt_data
+    Alt_data = np.load(path + 'Alt_feats.dat.npy')
+    global Alt_ID
+    Alt_ID = open(path + 'Alt_IDs.txt', 'r').read().split('\n')
+
+    global Right_data
+    Right_data = np.load(path + 'Right_feats.dat.npy')
+    global Right_ID
+    Right_ID = open(path + 'Right_IDs.txt', 'r').read().split('\n')
+
+    global Left_data
+    Left_data = np.load(path + 'Left_feats.dat.npy')
+    global Left_ID
+    Left_ID = open(path + 'Left_IDs.txt', 'r').read().split('\n')
+
+    global Center_data
+    Center_data = np.load(path + 'Center_feats.dat.npy')  # <class 'numpy.ndarray'>   (200272, 144)
+    global Center_ID
+    Center_ID = open(path + 'Center_IDs.txt', 'r').read().split('\n')  # List of IDs
+
+    BGL_csv_filename = '/u/cs401/Wordlists/BristolNorms+GilhoolyLogie.csv'
+    Warringer_csv_filename = '/u/cs401/Wordlists/Ratings_Warriner_et_al.csv'
+
+    global BGL
+    BGL = pd.read_csv(BGL_csv_filename,
+                      usecols=["WORD", "AoA (100-700)", "IMG", "FAM"])
+    global warringer
+    warringer = pd.read_csv(Warringer_csv_filename,
+                            usecols=["Word", "V.Mean.Sum", "D.Mean.Sum", "A.Mean.Sum"])
+
+    global BGL_word
+    BGL_word = BGL.set_index(['WORD'])
+    global warringer_word
+    warringer_word = warringer.set_index(['Word'])
+
+    global findall
+    findall= functools.partial(re.findall, flags=re.IGNORECASE)
+    global nfindall
+    nfindall= len_dec(findall)
 
     #Load data
     data = json.load(open(args.input))

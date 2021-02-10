@@ -20,6 +20,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.neural_network import MLPClassifier
 from sklearn.naive_bayes import GaussianNB
 from sklearn.linear_model import SGDClassifier
+from sklearn.model_selection import KFold
 #from sklearn.preprocessing import StandardScaler, MinMaxScale
 from sklearn.utils import shuffle
 from sklearn.base import clone
@@ -141,8 +142,8 @@ def class32(output_dir, X_train, X_test, y_train, y_test, iBest):
             classifier.fit(X, y)
             y_pred = classifier.predict(X_test)
             conf_matrix = confusion_matrix(y_test, y_pred)
-            accuracy = accuracy(conf_matrix)
-            outf.write(f'{num_train}: {accuracy:.4f}\n')
+            accuracy_result = accuracy(conf_matrix)
+            outf.write(f'{num_train}: {accuracy_result:.4f}\n')
 
     return (X_1k, y_1k)
 
@@ -160,25 +161,44 @@ def class33(output_dir, X_train, X_test, y_train, y_test, i, X_1k, y_1k):
        X_1k: numPy array, just 1K rows of X_train (from task 3.2)
        y_1k: numPy array, just 1K rows of y_train (from task 3.2)
     '''
+    if not os.path.exists(f"{output_dir}"):
+        os.makedirs(f"{output_dir}")
+
     # q1
     k_feat = 5
-    selector = SelectKBest(f_classif, k_feat)
-    X_new = selector.fit_transform(X_train, y_train)
-    features_32k = selector.get_support(True)
-    p_values = selector.pvalues_
+    selector_k5 = SelectKBest(f_classif, k_feat)
+    X_new = selector_k5.fit_transform(X_train, y_train)
+    features_32k = selector_k5.get_support(True) # q4
+    p_values = selector_k5.pvalues_
 
-    k_feat2 = 50
-    selector2 = SelectKBest(f_classif, k_feat2)
-    X_new2 = selector2.fit_transform(X_train, y_train)
-    p_values2 = selector2.pvalues_
+    k_feat50 = 50
+    selector_k50 = SelectKBest(f_classif, k_feat50)
+    X_new2 = selector_k50.fit_transform(X_train, y_train)
+    p_values_k50 = selector_k50.pvalues_
 
     # q2
+    classifier = clone(classifiers[i])
+    classifier.fit(X_new, y_train)
+    y_pred = classifier.predict(selector_k5.transform(X_test))
+    conf_matrix = confusion_matrix(y_test, y_pred)
+    accuracy_full = accuracy(conf_matrix)
 
     # q3
+    k_feat_1k = 5
+    selector_1k = SelectKBest(f_classif, k_feat_1k)
+    X_new_1k = selector_1k.fit_transform(X_1k, y_1k)
+    classifier_1k = clone(classifiers[i])
+    classifier_1k.fit(X_new_1k, y_1k)
+    y_pred_1k = classifier_1k.predict(selector_1k.transform(X_test))
+    conf_matrix_1k = confusion_matrix(y_test, y_pred_1k)
+    accuracy_1k = accuracy(conf_matrix_1k)
 
     # q4
+    features_1k = selector_1k.get_support(True)
+    feature_intersection = np.intersect1d(features_1k, features_32k,
+                                  return_indices=True)
+    top_5 = features_32k
 
-    # q5
 
     with open(f"{output_dir}/a1_3.3.txt", "w") as outf:
         # Prepare the variables with corresponding names, then uncomment
@@ -187,7 +207,7 @@ def class33(output_dir, X_train, X_test, y_train, y_test, i, X_1k, y_1k):
         # for each number of features k_feat, write the p-values for
         # that number of features:
         outf.write(f'{k_feat} p-values: {[round(pval, 4) for pval in p_values]}\n')
-        outf.write(f'{k_feat2} p-values: {[round(pval, 4) for pval in p_values2]}\n')
+        outf.write(f'{k_feat50} p-values: {[round(pval, 4) for pval in p_values_k50]}\n')
 
         outf.write(f'Accuracy for 1k: {accuracy_1k:.4f}\n')
         outf.write(f'Accuracy for full dataset: {accuracy_full:.4f}\n')
@@ -206,14 +226,41 @@ def class34(output_dir, X_train, X_test, y_train, y_test, i):
        y_test: NumPy array, with the selected testing classes
        i: int, the index of the supposed best classifier (from task 3.1)
         '''
-    print('TODO Section 3.4')
+    if not os.path.exists(f"{output_dir}"):
+        os.makedirs(f"{output_dir}")
+
+    X_all = np.concatenate([X_train, X_test], axis=0)
+    y_all = np.concatenate([y_train, y_test], axis=0)
+    kf = KFold(n_splits=5, shuffle=True)
+
+    p_values = []
+    all_kfold_accuracies = []
+    for j, classifier_clone in enumerate(classifiers):
+        fold = 0
+        kfold_accuracies = []
+        for train_index, test_index in kf.split(X_all):
+            classifier = clone(classifier_clone)
+            X_train, X_test = X_all[train_index], X_all[test_index]
+            y_train, y_test = y_all[train_index], y_all[test_index]
+            classifier.fit(X_train, y_train)
+            C = confusion_matrix(y_test, classifier.predict(X_test))
+
+            kfold_accuracies.append(accuracy(C))
+            fold += 1
+        all_kfold_accuracies.append(kfold_accuracies)
+
+    for j in range(5):
+        if j!=i:
+            S, pvalue = ttest_rel(all_kfold_accuracies[j], all_kfold_accuracies[i])
+            p_values.append(pvalue)
+
+
 
     with open(f"{output_dir}/a1_3.4.txt", "w") as outf:
         # Prepare kfold_accuracies, then uncomment this, so it writes them to outf.
-        # for each fold:
-        #     outf.write(f'Kfold Accuracies: {[round(acc, 4) for acc in kfold_accuracies]}\n')
-        # outf.write(f'p-values: {[round(pval, 4) for pval in p_values]}\n')
-        pass
+        for kf_acc in all_kfold_accuracies:
+            outf.write(f'Kfold Accuracies: {[round(acc, 4) for acc in kf_acc]}\n')
+        outf.write(f'p-values: {[round(pval, 4) for pval in p_values]}\n')
 
 
 if __name__ == "__main__":
@@ -237,9 +284,20 @@ if __name__ == "__main__":
     X_train, X_test, y_train, y_test = train_test_split(features, labels, test_size=0.2)
     X_train, y_train = shuffle(X_train, y_train)
 
-    # 3.1
-    iBest = class31(args.output_dir, X_train, X_test, y_train, y_test)
-    print("iBest:  %d \n", iBest)
+    # # 3.1
+    # print("Processing 3.1")
+    # iBest = class31(args.output_dir, X_train, X_test, y_train, y_test)
+    #
+    # # 3.2
+    # print("Processing 3.2")
+    # (X_1k, y_1k) = class32(args.output_dir, X_train, X_test, y_train, y_test, iBest)
+    #
+    # # 3.3
+    # print("Processing 3.3")
+    # class33(args.output_dir, X_train, X_test, y_train, y_test, iBest, X_1k, y_1k)
 
-    # 3.2
+    # 3.4
+    print("Processing 3.4")
+    iBest = 4
+    class34(args.output_dir, X_train, X_test, y_train, y_test, iBest)
 

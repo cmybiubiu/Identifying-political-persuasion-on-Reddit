@@ -14,8 +14,6 @@ import json
 import re
 import spacy
 import html
-import time
-
 
 
 nlp = spacy.load('en_core_web_sm', disable=['parser', 'ner'])
@@ -78,13 +76,13 @@ def main(args):
 
             data = json.load(open(fullFile))
 
-            # TODO: select appropriate args.max lines
-            # TODO: read those lines with something like `j = json.loads(line)`
-            # TODO: choose to retain fields from those lines that are relevant to you
-            # TODO: add a field to each selected line called 'cat' with the value of 'file' (e.g., 'Alt', 'Right', ...)
-            # TODO: process the body field (j['body']) with preproc1(...) using default for `steps` argument
-            # TODO: replace the 'body' field with the processed text
-            # TODO: append the result to 'allOutput'
+            # select appropriate args.max lines
+            # read those lines with something like `j = json.loads(line)`
+            # choose to retain fields from those lines that are relevant to you
+            # add a field to each selected line called 'cat' with the value of 'file' (e.g., 'Alt', 'Right', ...)
+            # process the body field (j['body']) with preproc1(...) using default for `steps` argument
+            # replace the 'body' field with the processed text
+            # append the result to 'allOutput'
             lines = data[args.ID[0] % len(data): args.ID[0] % len(data) + args.max]
 
             for line in lines:
