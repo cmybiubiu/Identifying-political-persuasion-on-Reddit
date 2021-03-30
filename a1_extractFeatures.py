@@ -268,7 +268,7 @@ def extract2(feat, comment_class, comment_id):
 def main(args):
     #Declare necessary global variables here.
     feats_path = os.path.join(args.a1_dir, 'feats/')
-    wordlists_path = os.path.join(args.a1_dir, "../Wordlists")
+    wordlists_path = os.path.join(args.a1_dir, '../Wordlists/')
     
     global Alt_data
     Alt_data = np.load(feats_path + 'Alt_feats.dat.npy')
