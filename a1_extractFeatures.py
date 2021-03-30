@@ -267,6 +267,9 @@ def extract2(feat, comment_class, comment_id):
 
 def main(args):
     #Declare necessary global variables here.
+    feats_path = os.path.join(args.a1_dir, 'feats/')
+    wordlists_path = os.path.join(args.a1_dir, "../Wordlists")
+    
     global Alt_data
     Alt_data = np.load(feats_path + 'Alt_feats.dat.npy')
     global Alt_ID
@@ -331,12 +334,9 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Process each .')
     parser.add_argument("-o", "--output", help="Directs the output to a filename of your choice", required=True)
     parser.add_argument("-i", "--input", help="The input JSON file, preprocessed as in Task 1", required=True)
-    parser.add_argument("-p", "--a1_dir", help="Path to csc401 A1 directory. By default it is set to the cdf directory for the assignment.", default="/u/cs401/A1/")
-    parser.add_argument("-pw", "--wordlists_dir", help="Path to csc401 Worldlists directory. By default it is set to the cdf directory for the assignment.", default="/u/cs401/Wordlists/")
-
+    parser.add_argument("-p", "--a1_dir",
+                        help="Path to csc401 A1 directory. By default it is set to the cdf directory for the assignment.",
+                        default="/u/cs401/A1/")
     args = parser.parse_args()
-
-    feats_path = os.path.join(args.a1_dir, 'feats/')
-    wordlists_path = args.wordlists_dir
 
     main(args)
